@@ -310,46 +310,8 @@ function loadGitalk () {
   function initGitalk () {
     var gitalk = new Gitalk(Object.assign({
       clientID: 'c2f87403b1eb48242fd0',
-      clientSecret: 'e687d315a31a49ded4c3ba590bf12ff20ecc118c',
-      repo: 'blog-comments.git',
-      owner: 'ChaucerG',
-      admin: ['ChaucerG'],
-      id: 'fafeaa0b4cf039a1a7f35ba01675c85a',
-      language: 'zh-CN',
-      perPage: 10,
-      distractionFreeMode: false,
-      pagerDirection: 'last',
-      createIssueManually: false,
-      updateCountCallback: commentCount
-    },null))
-
-    gitalk.render('gitalk-container')
-  }
-
-  if (typeof Gitalk === 'function') initGitalk()
-  else {
-    addGitalkSource()
-    getScript('https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js').then(initGitalk)
-  }
-}
-
-function commentCount(n){
-  let isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
-  if (isCommentCount) {
-    isCommentCount.innerHTML= n
-  }
-}
-
-if ('Gitalk' === 'Gitalk' || !true) {
-  if (true) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
-  else loadGitalk()
-} else {
-  function loadOtherComment () {
-    loadGitalk()
-  }
-}</script></div><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>  clientID: 'c2f87403b1eb48242fd0',
-      clientSecret: 'e687d315a31a49ded4c3ba590bf12ff20ecc118c',
-      repo: 'blog-comments.git',
+      clientSecret: '2710e87d30566c624d462848d26c6ecfaa287296',
+      repo: 'blog-comments',
       owner: 'ChaucerG',
       admin: ['ChaucerG'],
       id: 'fafeaa0b4cf039a1a7f35ba01675c85a',
