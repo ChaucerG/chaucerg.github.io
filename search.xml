@@ -4,6 +4,39 @@
   
     
     <entry>
+      <title>在ResNet与Transformer均适用的Skip Connection解读</title>
+      <link href="/2021/09/05/%E5%9C%A8ResNet%E4%B8%8ETransformer%E5%9D%87%E9%80%82%E7%94%A8%E7%9A%84Skip%20Connection%E8%A7%A3%E8%AF%BB/"/>
+      <url>/2021/09/05/%E5%9C%A8ResNet%E4%B8%8ETransformer%E5%9D%87%E9%80%82%E7%94%A8%E7%9A%84Skip%20Connection%E8%A7%A3%E8%AF%BB/</url>
+      
+        <content type="html"><![CDATA[<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_2/1.png" alt=""></p><blockquote><p>该文主要是分析和讨论了跳跃连接的一些局限，同时分析了BN的一些限制，提出了通过递归的Skip connection和layer normalization来自适应地调整输入scale的策略，可以很好的提升跳Skip connection的性能，该方法在CV和NLP领域均适用。</p></blockquote><h2 id="简介">简介</h2><p>Skip connection是一种广泛应用于提高深度神经网络性能和收敛性的技术，它通过神经网络层传播的线性分量，缓解了非线性带来的优化困难。但是，从另一个角度来看，它也可以看作是输入和输出之间的调制机制，输入按预定义值1进行缩放。</p><p>在本文中，作者通过研究Skip connection的有效性和scale factors显示，一个微不足道的调整将导致spurious gradient爆炸或消失，这可以通过normalization来解决，特别是layer normalization。受此启发作者进一步提出通过递归的Skip connection和layer normalization来自适应地调整输入scale，这大大提高了性能，并且在包括机器翻译和图像分类数据集在内的各种任务中具有很好的泛化效果。</p><p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_2/2.png" alt="图1 常用skip connections"></p><h3 id="这项工作的特点：">这项工作的特点：</h3><ol><li>主要关注LN和skip connection的结合；</li><li>重新思考了层归一化的作用，选择不进行缩放；</li><li>在具有代表性的计算机视觉和自然语言处理任务上进行实验；</li><li>摆脱了泛化了所有以前工作的残差块的一般形式，并提出了一种新的递归残差块结构，它具有层归一化，优于本工作中检查的所有一般形式的变体；</li></ol><h2 id="方法">方法</h2><h3 id="connection-problem">connection problem</h3><p>在进行尺度scaling时，会出现梯度爆炸或消失的问题，阻碍了深度神经网络的高效优化。</p><h3 id="optimization-problem">optimization problem</h3><p>由于早期的工作已经确定，将Skip connection直接结合到神经网络的前向传播中就足够了，不需要任何尺度，后续的优化问题研究大多遵循Skip connection结构。</p><h3 id="架构说明">架构说明</h3><p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_2/3.png" alt="图2 常见LN与skip connections组合"></p><h4 id="Expanded-Skip-Connection-xSkip-："><strong>Expanded Skip Connection (xSkip)</strong>：</h4><p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_2/4.png" alt=""></p><p>其中，$x$和$y$分别为残差块的输入和输出。$F$为weighted neural network layer，$\lambda$为modulating scalar。</p><p>考虑到神经网络层可能具有不同的表示能力和优化难度，这种结构自然调整了跳跃的重要性。然而，需要注意的是，在这项工作中$\lambda$是固定的，目的是隔离缩放的影响。虽然学习过的$\lambda$可能更好地捕捉到这2个部分之间的平衡，但是学习$\lambda$变成了另一个变量。</p><h4 id="Expanded-Skip-Connection-with-Layer-Normalization-xSkip-LN-："><strong>Expanded Skip Connection with Layer Normalization (xSkip+LN)</strong>：</h4><p>在Transformer将跳跃连接与层规范化相结合的激励下，作者进一步研究了层规范化对扩展跳跃连接的影响：</p><p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_2/5.png" alt=""></p><p>实验表明层归一化有助于缓解调制因子在优化过程中引起的梯度畸变。不同于作用于“样本空间”的BN，LN则是作用于“特征空间”。同时在神经网络难以优化的情况下，LN仍然可以帮助学习shortcut，而BN可能会失败。</p><h4 id="Recursive-Skip-Connection-with-Layer-Normalization-rSkip-LN-："><strong>Recursive Skip Connection with Layer Normalization (rSkip+LN)</strong>：</h4><p>另一种稳定梯度的方法是每次保持$\lambda$=1，但重复添加带有LN的shortcut，这样更多的输入信息也被建模。它被递归定义为：</p><p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_2/6.png" alt=""></p><p>$\lambda$应该是一个不小于1的整数。例如，当$\lambda$=1时，上式便回归到Transformer中使用的block，并符合跳过不需要缩放的结果。</p><p>通过recursive skip connection with layer normalization，该模型鼓励多次使用层归一化来改进优化，通过跳跃连接可以包含更多的x信息。此外，与一次性简单地合并比例跳跃相比，该模型可能获得更强的表达能力，因为每一个递归步骤本质上构建了一个不同的特征分布，递归结构可以学习自适应的x与F(x,W)。</p><h2 id="实验">实验</h2><h3 id="实验1：PreAct-ResNet-110-on-cifar10">实验1：PreAct-ResNet-110 on cifar10</h3><p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_2/7.png" alt=""></p><h3 id="实验2：EN-VI-machine-translation">实验2：EN-VI machine translation</h3><p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_2/8.png" alt=""></p><h3 id="实验3：BN代替LN">实验3：BN代替LN</h3><p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_2/9.png" alt=""></p><p>可以看出，与LN结合跳跃连接相比，BN的效果较差。而本文所提出的递归策略可以帮助BN提升效果。</p><h3 id="实验结论">实验结论</h3><p>作者通过对不同任务的实验（Transformer和ResNet），得出如下结论:</p><ul><li><p>没有经过任何归一化的expanded skip connection确实会造成梯度畸形，导致神经网络的学习效果不理想。层归一化在一定程度上有助于解决 expanded skip connection带来的优化问题。</p></li><li><p>本文提出的带有LN的recursive skip connection，通过将expanded skip connection划分为多个阶段，以更好地融合转换输入的效果，进一步简化了优化过程。</p></li><li><p>利用Transformer在WMT-2014 EN-DE机器翻译数据集上的实验结果进一步证明了递归架构的有效性和效率，模型性能甚至优于3倍大的模型。</p></li></ul><h2 id="参考">参考</h2><p>[1].Rethinking Skip Connection with Layer Normalization in Transformers and ResNets<br></p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 卷积CNN </category>
+          
+          <category> Transformer </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> CNN </tag>
+            
+            <tag> 残差连接 </tag>
+            
+            <tag> Tansformer </tag>
+            
+            <tag> ResNet </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>CompConv卷积让模型不丢精度还可以提速</title>
       <link href="/2021/07/30/CompConv%E5%8D%B7%E7%A7%AF%E8%AE%A9%E6%A8%A1%E5%9E%8B%E4%B8%8D%E4%B8%A2%E7%B2%BE%E5%BA%A6%E8%BF%98%E5%8F%AF%E4%BB%A5%E6%8F%90%E9%80%9F/"/>
       <url>/2021/07/30/CompConv%E5%8D%B7%E7%A7%AF%E8%AE%A9%E6%A8%A1%E5%9E%8B%E4%B8%8D%E4%B8%A2%E7%B2%BE%E5%BA%A6%E8%BF%98%E5%8F%AF%E4%BB%A5%E6%8F%90%E9%80%9F/</url>
@@ -25,19 +58,6 @@
             <tag> CNN </tag>
             
         </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>Hello World</title>
-      <link href="/2021/07/30/hello-world/"/>
-      <url>/2021/07/30/hello-world/</url>
-      
-        <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p><h2 id="Quick-Start">Quick Start</h2><h3 id="Create-a-new-post">Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p><h3 id="Run-server">Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p><h3 id="Generate-static-files">Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p><h3 id="Deploy-to-remote-sites">Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>]]></content>
-      
-      
       
     </entry>
     
