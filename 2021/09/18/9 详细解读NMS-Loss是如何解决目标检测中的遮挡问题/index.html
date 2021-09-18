@@ -1,0 +1,352 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>详细解读NMS-Loss是如何解决目标检测中的遮挡问题 | 集智书童</title><meta name="keywords" content="NMS-Loss,让检测告别遮挡"><meta name="author" content="ChaucerG"><meta name="copyright" content="ChaucerG"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="简介 非极大值抑制(Non-Maximum Suppression, NMS)在目标检测中至关重要，它通过合并假阳性(FP)和假阴性(FN)影响目标检测结果，尤其是在人群遮挡场景中。在本文中提出了NMS造成的训练目标和评估指标之间的弱连接问题，并提出了一种新的损失函数NMS-loss，使NMS过程可以端到端地被训练而不需要任何附加的网络参数。 NMS-loss惩罚2种情况，即FP没有被抑制，而F">
+<meta property="og:type" content="article">
+<meta property="og:title" content="详细解读NMS-Loss是如何解决目标检测中的遮挡问题">
+<meta property="og:url" content="https://chaucerg.github.io/2021/09/18/9%20%E8%AF%A6%E7%BB%86%E8%A7%A3%E8%AF%BBNMS-Loss%E6%98%AF%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E4%B8%AD%E7%9A%84%E9%81%AE%E6%8C%A1%E9%97%AE%E9%A2%98/index.html">
+<meta property="og:site_name" content="集智书童">
+<meta property="og:description" content="简介 非极大值抑制(Non-Maximum Suppression, NMS)在目标检测中至关重要，它通过合并假阳性(FP)和假阴性(FN)影响目标检测结果，尤其是在人群遮挡场景中。在本文中提出了NMS造成的训练目标和评估指标之间的弱连接问题，并提出了一种新的损失函数NMS-loss，使NMS过程可以端到端地被训练而不需要任何附加的网络参数。 NMS-loss惩罚2种情况，即FP没有被抑制，而F">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://chaucerg.github.io/img/achieve_img.jpg">
+<meta property="article:published_time" content="2021-09-18T08:10:45.000Z">
+<meta property="article:modified_time" content="2021-09-18T08:24:58.144Z">
+<meta property="article:author" content="ChaucerG">
+<meta property="article:tag" content="NMS-Loss">
+<meta property="article:tag" content="让检测告别遮挡">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://chaucerg.github.io/img/achieve_img.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://chaucerg.github.io/2021/09/18/9%20%E8%AF%A6%E7%BB%86%E8%A7%A3%E8%AF%BBNMS-Loss%E6%98%AF%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E4%B8%AD%E7%9A%84%E9%81%AE%E6%8C%A1%E9%97%AE%E9%A2%98/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: true,
+    post: true
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: ChaucerG","link":"链接: ","source":"来源: 集智书童","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '详细解读NMS-Loss是如何解决目标检测中的遮挡问题',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-09-18 16:24:58'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 5.4.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">16</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">28</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-map-signs"></i><span> 目录</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fas fa-coffee"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/achieve_img.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">集智书童</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-map-signs"></i><span> 目录</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fas fa-coffee"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">详细解读NMS-Loss是如何解决目标检测中的遮挡问题</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-09-18T08:10:45.000Z" title="发表于 2021-09-18 16:10:45">2021-09-18</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-09-18T08:24:58.144Z" title="更新于 2021-09-18 16:24:58">2021-09-18</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="详细解读NMS-Loss是如何解决目标检测中的遮挡问题"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210608/1.png" alt=""></p>
+<h2 id="简介">简介</h2>
+<p>非极大值抑制(Non-Maximum Suppression, NMS)在目标检测中至关重要，它通过合并假阳性(FP)和假阴性(FN)影响目标检测结果，尤其是在人群遮挡场景中。在本文中提出了NMS造成的训练目标和评估指标之间的弱连接问题，并提出了一种新的损失函数<strong>NMS-loss</strong>，使NMS过程可以端到端地被训练而不需要任何附加的网络参数。</p>
+<p>NMS-loss惩罚2种情况，即FP没有被抑制，而FN被NMS错误地删除。具体来说，NMS-Loss提出了pull loss将具有相同目标的预测拉得很近，以及push loss将具有不同目标的预测推得很远。</p>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210608/2.png" alt=""></p>
+<p>实验结果表明，在NMS-Loss的帮助下NMS-Ped检测器在Caltech数据集上的Miss Rate为5.92%，在CityPersons数据集上的Miss Rate为10.08%，均优于现有的同类检测器。</p>
+<h4 id="本文主要贡献">本文主要贡献</h4>
+<ul>
+<li>
+<p>首先提出了行人检测中训练目标与评估指标之间的弱连接问题，并提出了一种新的NMS-loss，使NMS过程在不引入任何参数和运行时间开销的情况下可以端到端进行训练。</p>
+</li>
+<li>
+<p>作者提出了精心设计的pull loss和push loss，分别考虑预测坐标和置信度，帮助网络提高精度和召回性能。</p>
+</li>
+<li>
+<p>在行人检测中，作者借助NMS-Loss提出的NMS-Ped在Caltech和CityPersons数据集上优于现有的SOTA方法。</p>
+</li>
+</ul>
+<h2 id="NMS-LOSS">NMS-LOSS</h2>
+<p>传统的NMS流程如Alg.1中所示，没有考虑红色字体。</p>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210608/3.png" alt=""></p>
+<p>NMS从一组得分为S的检测框$B$开始，</p>
+<p><strong>首先</strong>，将得分最大的proposal $𝑏_𝑚$从$B$集合移动到最终保留检测的集合$K$;</p>
+<p><strong>然后</strong>，删除$B$中得分为$S$的且与$𝑏_𝑚$的重叠高于阈值$𝑁_𝑡$的框。</p>
+<p>对剩下的$B$集重复此过程。</p>
+<p>但是，现有的方法没有将NMS纳入训练过程中来调整检测框，使得学习目标与评价指标不一致，这意味着NMS未抑制FP和NMS消除FN分别会损害精度和召回率。为了避免不一致，作者提出NMS-loss将NMS程序引入到训练过程中，自适应地选择由NMS引起的错误预测，并使用精心设计的pull和push两种损失来最小化FP和FN。具体来说NMS-Loss定义为:</p>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210608/4.png" alt=""></p>
+<p>其中$L_{pull}$为pull损失用来惩罚FP同时不抑制由NMS，$L_{push}$为push损失用来惩罚NMS的FN错误删除。系数$\lambda_{pull}$和$\lambda_{push}$是平衡损失的权重。</p>
+<p>NMS-Loss的细节在Alg.1中用红色文本强调。与传统pipeline不同，这里使用一组$G$，包含相应的检测框ground truth index，用于识别FP和FN。在NMS-Loss计算过程中，M是一个辅助字典，以ground truth指数为key，对应最大检测得分为value，用来记录每个ground truth的max score预测。</p>
+<p>NMS-loss自然地合并到NMS过程中，而不包含任何额外的训练参数。对于测试来说，NMS-Loss的运行时成本为零。</p>
+<h3 id="2-1-定义Pull-Loss">2.1 定义Pull Loss</h3>
+<p>以降低FP为目标需要找出错误的预测。为此，在每次迭代中检查当前的max score预测$𝑏_𝑚$是否为其对应的$g_𝑚$ ground truth的max score预测。如果不是，则说明$𝑏_𝑚$是一个未被NMS抑制的FP，pull loss应在$𝑏_𝑚$和$g_𝑚$ ground truth的max score prediction $𝑏_{𝑚𝑎𝑥}$之间执行(见图1)。形式上pull loss计算如下:</p>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210608/5.png" alt=""></p>
+<p>其中$N_t$为预定义的NMS阈值，$s_m$为对应于$b_m$的预测score。</p>
+<p>作者注意到pull loss的2个特性:</p>
+<ul>
+<li>
+<p>当$b_{max}$和$b_m$之间的IoU较小时，pull loss有增加的趋势，迫使网络学会将$b_m$拉向$b_{max}$。NMS的阈值$N_t$用于防止异常值的梯度对模型学习的影响过大。另外，对于NMS只需要使FP和TP之间的IoU高于$N_t$即可。在pull loss中使用$N_t$来减小异常值的梯度，可以使网络易于学习和收敛。</p>
+</li>
+<li>
+<p>FP预测得分对pull loss也有较大影响。FP得分越高，对评价结果的影响越大，直观上需要更多的关注。此外，它使网络学习修正FP不仅要制约box坐标，而且要考虑降低预测分数。</p>
+</li>
+</ul>
+<h3 id="2-2-定义Push-Loss">2.2 定义Push Loss</h3>
+<p>在NMS中，当前的最大score预测$𝑏_𝑚$用$𝑏_𝑚$消除了获得高于$𝑁_𝑡$的IoU的box。如果剔除的框$b_i$对应的ground truth index 与$b_m$不同，则$b_i$为FN，降低召回率(见图1)。为了避免错误地删除$𝑏_𝑖$提出push loss来惩罚FN:</p>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210608/6.png" alt=""></p>
+<p>其中$s_i$为$b_i$对应的预测得分。与pull loss不同当$IoU(b_i,b_m)\to1$时，push loss增大，模型学会将$b_i$推离$b_m$。为了避免模型倾向于通过降低FN的分数来减少push loss，作者只使用$s_i$来重新加权损失，而不使用反向传播梯度。</p>
+<p>对于拥挤的场景，特别是在CityPersons数据集中，边界框的ground truths是相互重叠的。在IoU=0的情况下，将他们的预测相互排斥是不合理的。为了处理这个问题，作者只在预测IoU高于其对应ground truth box的IoU时才计算$𝐿_{𝑝𝑢𝑠ℎ}$。</p>
+<p>本文所提的Pull Loss和Push Loss是根据预测来执行的。当pull/push loss被激活时，网络会尝试pull/push两个预测，分别pull/push彼此。因为高分预测通常会得到一个更准确的位置，所以在一个不准确的预测基础上移动一个准确的预测是不合理的。为了解决这个问题，作者停止了高分预测的梯度向后传播，导致网络专注于错误的预测。</p>
+<h3 id="2-3-与RepLoss的不同之处在哪里？">2.3 与RepLoss的不同之处在哪里？</h3>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210608/7.png" alt=""></p>
+<p>RepLoss通过设置损失函数的方式，使预测框和所负责的真实目标框的距离缩小，而使得其与周围非负责目标框（包含真实目标框和预测框）的距离加大 。如下式，如果与周围目标的距离越大，损失值会越小。<br>
+<img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210608/8.png" alt=""></p>
+<p>作者对NMS-Loss和RepLoss进行了详细的比较，因为这2种方法都是基于它们的目标进行pull/push预测的。</p>
+<p>主要有3个区别:</p>
+<ul>
+<li>
+<p>RepLoss在所有实例上执行，而NMS-Loss只在被NMS错误处理的实例上执行，从而实现了端到端训练。</p>
+</li>
+<li>
+<p>RepLoss只考虑回归，而score在NMS-Loss中也用于实例重加权。</p>
+</li>
+<li>
+<p>在密集人群场景下RepLoss将实例推开，即使它们的目标本来很接近，使RepLoss与回归损失相矛盾。相反，NMS-Loss会推送与其他IoU高于其对应ground truth box IoU的实例，这样可以消除RepLoss的矛盾。</p>
+</li>
+</ul>
+<p>如表所示，NMS-Loss不仅比RepLoss表现更好，而且在CityPersons上有更高的相对改善。这表明，NMS-Loss可以在广泛使用的数据集上实现稳定的相对改进(高于10%)。</p>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210608/9.png" alt=""></p>
+<h2 id="实验">实验</h2>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210608/10.png" alt=""></p>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210608/11.png" alt=""></p>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210608/12.png" alt=""></p>
+<h2 id="参考阅读">参考阅读</h2>
+<p>[1].NMS-Loss: Learning with Non-Maximum Suppression for Crowded Pedestrian Detection<br></p>
+<p>[2].Repulsion Loss: Detecting Pedestrians in a Crowd<br></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">ChaucerG</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://chaucerg.github.io/2021/09/18/9%20%E8%AF%A6%E7%BB%86%E8%A7%A3%E8%AF%BBNMS-Loss%E6%98%AF%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E4%B8%AD%E7%9A%84%E9%81%AE%E6%8C%A1%E9%97%AE%E9%A2%98/">https://chaucerg.github.io/2021/09/18/9%20%E8%AF%A6%E7%BB%86%E8%A7%A3%E8%AF%BBNMS-Loss%E6%98%AF%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E4%B8%AD%E7%9A%84%E9%81%AE%E6%8C%A1%E9%97%AE%E9%A2%98/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://chaucerg.github.io" target="_blank">集智书童</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/NMS-Loss/">NMS-Loss</a><a class="post-meta__tags" href="/tags/%E8%AE%A9%E6%A3%80%E6%B5%8B%E5%91%8A%E5%88%AB%E9%81%AE%E6%8C%A1/">让检测告别遮挡</a></div><div class="post_share"><div class="social-share" data-image="/img/achieve_img.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button button--animated"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wechat.png" target="_blank"><img class="post-qr-code-img" src="/img/wechat.png" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="/img/alipay.png" target="_blank"><img class="post-qr-code-img" src="/img/alipay.png" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/09/05/8%20%E5%8D%B7%E7%A7%AF%E4%B8%8ESelf-Attention%E5%AE%8C%E7%BE%8E%E8%9E%8D%E5%90%88X-volution%E6%8F%92%E5%85%A5CV%E6%A8%A1%E5%9E%8B%E5%B0%86%E5%B8%A6%E6%9D%A5%E5%85%A8%E4%BB%BB%E5%8A%A1%E7%9A%84%E6%B6%A8%E7%82%B9/"><img class="prev-cover" src="/img/achieve_img.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">卷积与Self-Attention完美融合X-volution插入CV模型将带来全任务的涨点</div></div></a></div><div class="next-post pull-right"><a href="/2021/09/18/10/"><img class="next-cover" src="/img/achieve_img.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">太顶流！Scaling ViT将ImageNet Top-1 Acc刷到90.45%！</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">ChaucerG</div><div class="author-info__description">干就完了！</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">16</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">28</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ChaucerG"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/ChaucerG" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:chaucer_g@126.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a><a class="social-icon" href="/img/weixin.jpg" target="_blank" title="Wechat"><i class="fab fa-weixin"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">更多内容可以关注【集智书童】公众号和【集智书童】知识星球，获取原创文章以及项目源码 ~</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-number">1.</span> <span class="toc-text">简介</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9C%AC%E6%96%87%E4%B8%BB%E8%A6%81%E8%B4%A1%E7%8C%AE"><span class="toc-number">1.0.1.</span> <span class="toc-text">本文主要贡献</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NMS-LOSS"><span class="toc-number">2.</span> <span class="toc-text">NMS-LOSS</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%AE%9A%E4%B9%89Pull-Loss"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 定义Pull Loss</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%AE%9A%E4%B9%89Push-Loss"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 定义Push Loss</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E4%B8%8ERepLoss%E7%9A%84%E4%B8%8D%E5%90%8C%E4%B9%8B%E5%A4%84%E5%9C%A8%E5%93%AA%E9%87%8C%EF%BC%9F"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 与RepLoss的不同之处在哪里？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C"><span class="toc-number">3.</span> <span class="toc-text">实验</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E9%98%85%E8%AF%BB"><span class="toc-number">4.</span> <span class="toc-text">参考阅读</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2021/09/18/16/" title="教你How to train自己的Transformer模型"><img src="/img/achieve_img.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="教你How to train自己的Transformer模型"/></a><div class="content"><a class="title" href="/2021/09/18/16/" title="教你How to train自己的Transformer模型">教你How to train自己的Transformer模型</a><time datetime="2021-09-18T09:20:49.000Z" title="发表于 2021-09-18 17:20:49">2021-09-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/09/18/15/" title="AdaConv自适应卷积让你的GAN比AdaIN更看重细节"><img src="/img/achieve_img.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="AdaConv自适应卷积让你的GAN比AdaIN更看重细节"/></a><div class="content"><a class="title" href="/2021/09/18/15/" title="AdaConv自适应卷积让你的GAN比AdaIN更看重细节">AdaConv自适应卷积让你的GAN比AdaIN更看重细节</a><time datetime="2021-09-18T09:15:38.000Z" title="发表于 2021-09-18 17:15:38">2021-09-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/09/18/14/" title="详细解读：HP-x激活函数"><img src="/img/achieve_img.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="详细解读：HP-x激活函数"/></a><div class="content"><a class="title" href="/2021/09/18/14/" title="详细解读：HP-x激活函数">详细解读：HP-x激活函数</a><time datetime="2021-09-18T09:07:25.000Z" title="发表于 2021-09-18 17:07:25">2021-09-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/09/18/13/" title="详细解读Attention-Based方法解决遮挡人脸识别问题"><img src="/img/achieve_img.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="详细解读Attention-Based方法解决遮挡人脸识别问题"/></a><div class="content"><a class="title" href="/2021/09/18/13/" title="详细解读Attention-Based方法解决遮挡人脸识别问题">详细解读Attention-Based方法解决遮挡人脸识别问题</a><time datetime="2021-09-18T09:00:12.000Z" title="发表于 2021-09-18 17:00:12">2021-09-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/09/18/12/" title="详细解读：如何让EfficientNet更加高效、速度更快"><img src="/img/achieve_img.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="详细解读：如何让EfficientNet更加高效、速度更快"/></a><div class="content"><a class="title" href="/2021/09/18/12/" title="详细解读：如何让EfficientNet更加高效、速度更快">详细解读：如何让EfficientNet更加高效、速度更快</a><time datetime="2021-09-18T08:51:10.000Z" title="发表于 2021-09-18 16:51:10">2021-09-18</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/achieve_img.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2021 By ChaucerG</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Welcome to my CHANNEL!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (true){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><script src="/js/search/local-search.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.2
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container:not\([display]\)').forEach(node => {
+            const target = node.parentNode
+            if (target.nodeName.toLowerCase() === 'li') {
+              target.parentNode.classList.add('has-jax')
+            } else {
+              target.classList.add('has-jax')
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/copy-tex.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/copy-tex.css"><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script><script>function addGitalkSource () {
+  const ele = document.createElement('link')
+  ele.rel = 'stylesheet'
+  ele.href= 'https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css'
+  document.getElementsByTagName('head')[0].appendChild(ele)
+}
+
+function loadGitalk () {
+  function initGitalk () {
+    var gitalk = new Gitalk(Object.assign({
+      clientID: 'c2f87403b1eb48242fd0',
+      clientSecret: '2710e87d30566c624d462848d26c6ecfaa287296',
+      repo: 'blog-comments',
+      owner: 'ChaucerG',
+      admin: ['ChaucerG'],
+      id: '48762abac3da97870ec9c66ac9e55279',
+      language: 'zh-CN',
+      perPage: 10,
+      distractionFreeMode: false,
+      pagerDirection: 'last',
+      createIssueManually: false,
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  if (typeof Gitalk === 'function') initGitalk()
+  else {
+    addGitalkSource()
+    getScript('https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js').then(initGitalk)
+  }
+}
+
+function commentCount(n){
+  let isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+  if (isCommentCount) {
+    isCommentCount.innerHTML= n
+  }
+}
+
+if ('Gitalk' === 'Gitalk' || !true) {
+  if (true) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+  else loadGitalk()
+} else {
+  function loadOtherComment () {
+    loadGitalk()
+  }
+}</script></div><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
