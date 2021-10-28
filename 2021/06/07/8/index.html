@@ -1,0 +1,356 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>卷积与Self-Attention完美融合X-volution插入CV模型将带来全任务的涨点 | 集智书童</title><meta name="keywords" content="卷积,Self-Attention,CV模型"><meta name="author" content="ChaucerG"><meta name="copyright" content="ChaucerG"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="本文建立了一个由卷积和self-attention组成的多分支基本模块，能够统一局部和非局部特征交互，然后可以结构重新参数化为一个纯卷积风格的算子：X-volution，即插即用！可助力分类、检测和分割任务的涨点！作者单位：上海交通大学(倪冰冰团队), 华为海思  简介 卷积和self-attention是深度神经网络中的2个基本构建块，前者以线性方式提取图像的局部特征，而后者通过非局部关系">
+<meta property="og:type" content="article">
+<meta property="og:title" content="卷积与Self-Attention完美融合X-volution插入CV模型将带来全任务的涨点">
+<meta property="og:url" content="https://chaucerg.github.io/2021/06/07/8/index.html">
+<meta property="og:site_name" content="集智书童">
+<meta property="og:description" content="本文建立了一个由卷积和self-attention组成的多分支基本模块，能够统一局部和非局部特征交互，然后可以结构重新参数化为一个纯卷积风格的算子：X-volution，即插即用！可助力分类、检测和分割任务的涨点！作者单位：上海交通大学(倪冰冰团队), 华为海思  简介 卷积和self-attention是深度神经网络中的2个基本构建块，前者以线性方式提取图像的局部特征，而后者通过非局部关系">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://chaucerg.github.io/img/achieve_img.jpg">
+<meta property="article:published_time" content="2021-06-07T15:35:11.000Z">
+<meta property="article:modified_time" content="2021-10-28T05:32:36.412Z">
+<meta property="article:author" content="ChaucerG">
+<meta property="article:tag" content="卷积">
+<meta property="article:tag" content="Self-Attention">
+<meta property="article:tag" content="CV模型">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://chaucerg.github.io/img/achieve_img.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://chaucerg.github.io/2021/06/07/8/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: true,
+    post: true
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: ChaucerG","link":"链接: ","source":"来源: 集智书童","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '卷积与Self-Attention完美融合X-volution插入CV模型将带来全任务的涨点',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-10-28 13:32:36'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 5.4.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">37</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">61</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">24</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-map-signs"></i><span> 目录</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fas fa-coffee"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/achieve_img.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">集智书童</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-map-signs"></i><span> 目录</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fas fa-coffee"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">卷积与Self-Attention完美融合X-volution插入CV模型将带来全任务的涨点</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-06-07T15:35:11.000Z" title="发表于 2021-06-07 23:35:11">2021-06-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-10-28T05:32:36.412Z" title="更新于 2021-10-28 13:32:36">2021-10-28</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%8D%B7%E7%A7%AFCNN/">卷积CNN</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="卷积与Self-Attention完美融合X-volution插入CV模型将带来全任务的涨点"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><br>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210607/1.png" alt=""></p>
+<blockquote>
+<p>本文建立了一个由卷积和self-attention组成的多分支基本模块，能够统一局部和非局部特征交互，然后可以结构重新参数化为一个纯卷积风格的算子：X-volution，即插即用！可助力分类、检测和分割任务的涨点！<br><strong>作者单位</strong>：上海交通大学(倪冰冰团队), 华为海思</p>
+</blockquote>
+<h2 id="简介">简介</h2>
+<p>卷积和self-attention是深度神经网络中的2个基本构建块，前者以线性方式提取图像的局部特征，而后者通过非局部关系编码高阶上下文关系。尽管本质上是相互补充的，即一阶/高阶、最先进的架构，但是，CNN或Transformer均缺乏一种原则性的方法来在单个计算模块中同时应用这2种操作，因为它们的异构计算视觉任务的全局点积的模式和过度负担。</p>
+<p>在这项工作中，作者从理论上推导出一种全局self-attention近似方案，该方案通过对变换特征的卷积运算来近似self-attention。基于近似方案建立了一个由卷积和self-attention操作组成的多分支基本模块，能够统一局部和非局部特征交互。重要的是，一旦经过训练，这个多分支模块可以通过结构重新参数化有条件地转换为单个标准卷积操作，呈现一个名为X-volution的纯卷积风格的算子，准备作为atomic操作插入任何现代网络。大量实验表明，所提出的X-volution实现了极具竞争力的视觉理解改进（ImageNet分类的top-1准确率+1.2%，COCO 检测和分割的+1.7box AP和+1.5mask AP）。</p>
+<h2 id="方法">方法</h2>
+<p>本文提出了一种新颖的原子算子<strong>X-volution</strong>，将基本卷积算子和self-attention算子集成到一个统一的计算块中，期望从<strong>局部vs非局部</strong>/<strong>线性vs非线性</strong>两方面获得令人印象深刻的性能改进。</p>
+<p><strong>首先</strong>，回顾卷积和self-attention的基本数学公式；</p>
+<p><strong>然后</strong>，解读全局self-attention近似方案，它可以直接转换为一个兼容的卷积模式。</p>
+<p><strong>最后</strong>，解释在推断阶段如何有条件地合并卷积分支和所提出的self-attention近似到单个卷积风格原子操作符。</p>
+<h3 id="2-1-回顾卷积和self-attention">2.1 回顾卷积和self-attention</h3>
+<p>这2个算子想必大家已经非常熟悉了，这里就简单的说一下哈！！！</p>
+<h4 id="卷积Module">卷积Module</h4>
+<p>卷积算子是用于构建卷积神经网络(CNN)的基本算子，它通过有限局部区域内的线性加权来估计输出。给定一个特征张量$X\in R^{C_i×H×W}$, $C_i$表示输入通道的数量，H是高度，W是宽度。卷积算子的估计结果$Y\in R^{C_o×H×W}$由以下公式定义:</p>
+<img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210607/2.png" width = "500" align=center />
+<p>其中$C_o$为输出通道数。$w\in R^{C_o×C_i×K×K}$为卷积核，$W_{c_o,c_i,δ_i+[K/2],δ_j+[K/2]}$为特定位置核标量值。$K$为卷积kernel大小，$B\in R^{C_o}$为偏差向量，$∆k\in Z^2$为$K × K$卷积kernel中所有可能偏移的集合。</p>
+<h4 id="Self-Attention-Module">Self-Attention Module</h4>
+<p>与卷积不同，self-attention不能直接处理图像张量，首先将输入特征张量reshape为向量$X\in R^{C×L}$。$L$表示向量的长度，$L=H×W$。$W^Q、W^K、W^V$分别表示Query、Key、Value的嵌入变换，是空间共享的线性变换。Self-Attention的定义如下:</p>
+<img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210607/3.png" width = "500" align=center />
+<p>其中$\overline W(X)$表示最终的Self-Attention等价系数矩阵，可以认为是一个动态和空间变化的卷积kernel。</p>
+<h3 id="全局self-attention近似方案">全局self-attention近似方案</h3>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210607/4.png" alt=""></p>
+<p>全局自注意是最原始的attention方案，它得益于全局范围的优势而具有优异的性能。然而，它的复杂度太大了$O(n^2)(n表示总像素数)$使得其在CV任务中的应用受到严重限制。关键问题是<strong>能否在公式2中推导出$\overline W(X)$的适当近似结果，即能否找到$\overline W(X)$的兼容计算模式，即能否找到卷积、single element-wise product等现成的算子替代?</strong></p>
+<p>在本部分中，作者展示了在简单的element-wise shift和dot-product之后，可以用卷积的形式近似全局self-attention算子。给定特征张量$X$中的一个位置，将其特征向量表示为$x_0$，其attention logit $s_0$可以写成如下公式:</p>
+<img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210607/5.png" width = "500" align=center />
+<p>其中$\alpha _t = w^pw^qw^vx_t$， Ω为全局区域，A为以x0为中心的局部区域。在图1的左边说明了局部区域和非局部区域。图中灰框表示输入特征X的全局区域，绿框表示以$x_0$为中心的局部区域。</p>
+<p>另外，non-local区域是指局部区域以外的区域。因为图像具有很强的说服力（根据马尔可夫性质），$x_0$可以用像素在其局部区域近似线性表示:$x_0≈\sum_{x_k\in A˚}\beta _kx_k$，其中$\beta_k$为线性权值。代入式3中第2项，可得:</p>
+<img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210607/6.png" width = "500" align=center />
+<p>在不失一般性的情况下，可以在区域A中加入系数为零的项。通过设计，non-local区域也在局部区域的边界像素的接受域内。因此可以将上式转化为:</p>
+<img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210607/7.png" width = "400" align=center />
+<p>根据图像的马尔可夫性质，可以假设对于$x_k\in A$，远离$x_k$的$x_i$与$x_k$之间的相互作用是弱的。因此，可以进一步简化式上式:</p>
+<img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210607/8.png" width = "400" align=center />
+<p>其中$U(x_k)$为$x_k$的局部区域。将上式代入Eq.3中的第2项，可以改写为:</p>
+<img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210607/10.png" width = "500" align=center />
+<p>注意,$x_k,x_i$是$x_k$和$x_i$之间的内积，它衡量了$x_k$和$x_i$之间的相似性。$\sum_{x_i\in U(x_k)}\alpha_i\beta_k (x_k,x_i)$是$x_k$在其邻近区域的attention结果。因此，在$x_0$处的全局注意力logit可以通过加权求和其邻域内像素的attention结果来近似。</p>
+<p>根据以上理解，可以设计一个近似算子，通过逐点上下文关系传播来估计全局attention。因此，作者提出了一个全局注意力近似方案，Pixel Shift<br>
+Self-Attention (PSSA)，基于像素偏移和卷积来近似全局attention。</p>
+<p>具体来说，首先将特征映射沿给定的方向(即左、右、上等)移动L个像素，然后将原始特征与移动的特征进行元素积，得到变换后的特征。</p>
+<p>实际上，shift-product操作建立了邻域内点之间的上下文关系，通过分层叠加可以将上下文关系传播到全局区域。最后，对这些变换后的特征进行加权求和(可以通过卷积算子实现)，得到一个近似的自注意力映射。平移、元素积和加权求和的复杂度为O(n)，因此提出的PSSA是一个时间复杂度为O(n)的算子。值得注意的是，PSSA实际上是将self-attention转换为对转换特征的标准卷积运算。该结构通过层次叠加进而通过上下文关系传播实现全局self-attention logit的估计。</p>
+<h3 id="卷积和Self-Attention的统一-X-volution">卷积和Self-Attention的统一: X-volution</h3>
+<h4 id="卷积和Self-Attention是相辅相成的">卷积和Self-Attention是相辅相成的</h4>
+<p>卷积采用局域性和各向同性的归纳偏差，使其具有平移等方差的能力。然而，局部固有的特性使卷积无法建立形成图所必需的长期关系。</p>
+<p>与卷积相反，<strong>Self-Attention摒弃了提到的归纳偏差，即所谓的低偏差，并从数据集中发现自然模式，而没有明确的模型假设。低偏差原则给予Self-Attention以探索复杂关系的自由(例如，长期依赖、各向异性语义、CNN中的强局部相关性等)，因此该方案通常需要对超大数据集进行预训练(如JFT-300M、ImageNet21K)</strong>。</p>
+<p>此外，Self-Attention很难优化，需要更长的训练周期和复杂的Tricks。有文献提出将卷积引入Self-Attention以提高Self-Attention的鲁棒性和性能。简而言之，采用不同的模型假设，使卷积和Self-Attention在优化特征、注意范围(即局部/长期)和内容依赖(内容依赖/独立)等方面得到相互补充。</p>
+<h4 id="统一的多分支拓扑">统一的多分支拓扑</h4>
+<p>有一些工作试图将卷积和self-attention结合起来，然而，粗糙的拓扑组合(例如，分层堆叠，级联)阻止他们获得单个原子操作(在同一个模块中应用卷积和注意)，使结构不规则。例如，AANet将经过卷积层和Self-Attention层处理的结果直接连接起来，得到组合结果。说明单一的卷积或单一的Self-Attention都会导致性能下降，当它们同时存在时，性能会有显著的提高。</p>
+<p>在这个工作中，作者研究卷积和self-attention的数学原理后找到了近似形式。作者还观察到全局元素相互作用(点积)可以用局部元素相互作用的传播来近似表示。</p>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210607/11.png" alt=""></p>
+<p>因此，这2种算子可以用统一的计算模式来处理，即卷积。从另一个角度来看，卷积运算可以看作是Self-Attention的空间不变偏差。考虑到这一点，可以将算子组合成一个多分支拓扑，如图所示，这可以同时受益于卷积和Self-Attention。多分支模块由2个主要分支组成。左边的分支由级联的Shift Pixel Self-Attention和batch-normalization组成起到近似全局Self-Attention操作的作用，右分支被设计成由级联卷积和批归一化组成的卷积分支。</p>
+<h4 id="有条件地将多分支方案转换为Atomic-X-volution">有条件地将多分支方案转换为Atomic X-volution</h4>
+<p>多分支模块实现了卷积与Self-Attention的功能组合。然而，它只是一种粗粒度的算子组合，这将使网络高度复杂和不规则。从硬件实现的角度来看，多分支结构需要更多的缓存来服务于多路径的处理。相反，单个算子操作效率更高，内存开销更低，这是硬件友好的。</p>
+<p>为了简单起见，在这里省略批标准化的公式。实际上，批归一化可以看作是一个$1×1$组卷积(其组等于channel数)，可以合并到卷积/Self-Attention层中。实际上，一般采用分层叠加的PSSA，堆叠结构中的加权运算可以省略，因为分层叠加隐含了加权邻接像素的运算。本文提出的多分支模块的训练阶段如下：</p>
+<img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210607/12.png" width = "500" align=center />
+<p>其中$w^c$为卷积权值，$b^c$为其对应的偏置。</p>
+<img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210607/13.png" width = "500" align=center />
+<p>其中$w^A(x_0,x_i)=w^qw^kw^v(x_0,x_i)$表示来自pixel shift self-attention 分支的content-dependent/dynamic coefficients。$W_c$表示从卷积分支继承的content-independent/static coefficients，训练完成后会修复。</p>
+<p>观察上式可以发现，经过一个简单的变换，多分支结构可以转换成卷积形式。值得指出的是，这个过程在CNN中被广泛使用，被称为structural re-parameterization。在这里首先把它扩展到卷积和self-attention的合并。根据上式将由卷积和self-attention组成的多分支模块等价地转换为一个动态卷积算子X-voultion。</p>
+<p>请注意，这里建议X-volution可以作为一个原子操作插入主流网络(例如，ResNet)。</p>
+<h2 id="实验">实验</h2>
+<h3 id="图像分类">图像分类</h3>
+<h4 id="架构设计">架构设计</h4>
+<img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210607/14.png" width = "500" align=center />
+<img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210607/15.png" width = "400" align=center />
+<p>结果表明，第3阶段的替换效果最好，ResNet-34的top-1准确率为+1.2%，ResNet-50的top-1准确率为+0.9%。作者怀疑第4阶段替换的性能较差ResNet-50可以归因于可学习参数的增加，这减慢了网络的收敛。</p>
+<h3 id="目标检测">目标检测</h3>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210607/16.png" alt=""></p>
+<p>特别是，本文所提X-volution(SA)实现了最好的性能，与ResNet-50相比增加了+1.7boxes AP。通过结合低阶局部特征和高阶长依赖，所提出的X-volution算子比单独的卷积或自注意力算子具有更高的精度。</p>
+<p>结果表明，图完备原子算符有助于视觉理解，而现有的计算算符忽略了这一性质。此外，基于PSSA的X-volution也取得了与X-volution(SA)相当的性能，表明在X-volution模块中，近似效果良好，对硬件实现和计算更加友好。</p>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210607/17.png" alt=""></p>
+<h3 id="语义分割">语义分割</h3>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210607/19.png" alt=""></p>
+<p>可以观察到，作者提出的X-volution比其他算子的性能要好很多。其中，X-volution(SA)实现了41.1 box AP和37.2 mask AP。</p>
+<img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210607/20.png" width = "400" align=center />
+<h2 id="参考">参考</h2>
+<p>[1].X-volution: On the Unification of Convolution and Self-attention.<br></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">ChaucerG</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://chaucerg.github.io/2021/06/07/8/">https://chaucerg.github.io/2021/06/07/8/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://chaucerg.github.io" target="_blank">集智书童</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%8D%B7%E7%A7%AF/">卷积</a><a class="post-meta__tags" href="/tags/Self-Attention/">Self-Attention</a><a class="post-meta__tags" href="/tags/CV%E6%A8%A1%E5%9E%8B/">CV模型</a></div><div class="post_share"><div class="social-share" data-image="/img/achieve_img.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button button--animated"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wechat.png" target="_blank"><img class="post-qr-code-img" src="/img/wechat.png" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="/img/alipay.png" target="_blank"><img class="post-qr-code-img" src="/img/alipay.png" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/06/06/7/"><img class="prev-cover" src="/img/achieve_img.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">详细解读Transformer怎样从零训练并超越ResNet</div></div></a></div><div class="next-post pull-right"><a href="/2021/06/08/9/"><img class="next-cover" src="/img/achieve_img.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">详细解读NMS-Loss是如何解决目标检测中的遮挡问题</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">ChaucerG</div><div class="author-info__description">干就完了！</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">37</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">61</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">24</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ChaucerG"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/ChaucerG" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:chaucer_g@126.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a><a class="social-icon" href="/img/weixin.jpg" target="_blank" title="Wechat"><i class="fab fa-weixin"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">更多内容可以关注【集智书童】公众号和【集智书童】知识星球，获取原创文章以及项目源码 ~</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-number">1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%B9%E6%B3%95"><span class="toc-number">2.</span> <span class="toc-text">方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%9B%9E%E9%A1%BE%E5%8D%B7%E7%A7%AF%E5%92%8Cself-attention"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 回顾卷积和self-attention</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8D%B7%E7%A7%AFModule"><span class="toc-number">2.1.1.</span> <span class="toc-text">卷积Module</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Self-Attention-Module"><span class="toc-number">2.1.2.</span> <span class="toc-text">Self-Attention Module</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%A8%E5%B1%80self-attention%E8%BF%91%E4%BC%BC%E6%96%B9%E6%A1%88"><span class="toc-number">2.2.</span> <span class="toc-text">全局self-attention近似方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%B7%E7%A7%AF%E5%92%8CSelf-Attention%E7%9A%84%E7%BB%9F%E4%B8%80-X-volution"><span class="toc-number">2.3.</span> <span class="toc-text">卷积和Self-Attention的统一: X-volution</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8D%B7%E7%A7%AF%E5%92%8CSelf-Attention%E6%98%AF%E7%9B%B8%E8%BE%85%E7%9B%B8%E6%88%90%E7%9A%84"><span class="toc-number">2.3.1.</span> <span class="toc-text">卷积和Self-Attention是相辅相成的</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%9F%E4%B8%80%E7%9A%84%E5%A4%9A%E5%88%86%E6%94%AF%E6%8B%93%E6%89%91"><span class="toc-number">2.3.2.</span> <span class="toc-text">统一的多分支拓扑</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9C%89%E6%9D%A1%E4%BB%B6%E5%9C%B0%E5%B0%86%E5%A4%9A%E5%88%86%E6%94%AF%E6%96%B9%E6%A1%88%E8%BD%AC%E6%8D%A2%E4%B8%BAAtomic-X-volution"><span class="toc-number">2.3.3.</span> <span class="toc-text">有条件地将多分支方案转换为Atomic X-volution</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C"><span class="toc-number">3.</span> <span class="toc-text">实验</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%BE%E5%83%8F%E5%88%86%E7%B1%BB"><span class="toc-number">3.1.</span> <span class="toc-text">图像分类</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1"><span class="toc-number">3.1.1.</span> <span class="toc-text">架构设计</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B"><span class="toc-number">3.2.</span> <span class="toc-text">目标检测</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%AD%E4%B9%89%E5%88%86%E5%89%B2"><span class="toc-number">3.3.</span> <span class="toc-text">语义分割</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">4.</span> <span class="toc-text">参考</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2021/09/27/18/" title="如何用Transformer一步一步改进Unet?"><img src="/img/achieve_img.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="如何用Transformer一步一步改进Unet?"/></a><div class="content"><a class="title" href="/2021/09/27/18/" title="如何用Transformer一步一步改进Unet?">如何用Transformer一步一步改进Unet?</a><time datetime="2021-09-27T07:58:05.000Z" title="发表于 2021-09-27 15:58:05">2021-09-27</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/09/23/17/" title="85FPS！CNN+Transformer语义分割的又一境界，真的很快！"><img src="/img/achieve_img.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="85FPS！CNN+Transformer语义分割的又一境界，真的很快！"/></a><div class="content"><a class="title" href="/2021/09/23/17/" title="85FPS！CNN+Transformer语义分割的又一境界，真的很快！">85FPS！CNN+Transformer语义分割的又一境界，真的很快！</a><time datetime="2021-09-23T14:27:19.000Z" title="发表于 2021-09-23 22:27:19">2021-09-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/08/23/37/" title="详解分析 | ViT如何在医疗图像领域替代CNNs？"><img src="/img/achieve_img.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="详解分析 | ViT如何在医疗图像领域替代CNNs？"/></a><div class="content"><a class="title" href="/2021/08/23/37/" title="详解分析 | ViT如何在医疗图像领域替代CNNs？">详解分析 | ViT如何在医疗图像领域替代CNNs？</a><time datetime="2021-08-23T10:35:27.000Z" title="发表于 2021-08-23 18:35:27">2021-08-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/08/16/36/" title="详细解读 | 如何让你的DETR目标检测模型快速收敛"><img src="/img/achieve_img.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="详细解读 | 如何让你的DETR目标检测模型快速收敛"/></a><div class="content"><a class="title" href="/2021/08/16/36/" title="详细解读 | 如何让你的DETR目标检测模型快速收敛">详细解读 | 如何让你的DETR目标检测模型快速收敛</a><time datetime="2021-08-16T10:14:59.000Z" title="发表于 2021-08-16 18:14:59">2021-08-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/08/14/35/" title="Mobile-Former | MobileNet+Transformer轻量化模型(精度速度秒杀MobileNet)"><img src="/img/achieve_img.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Mobile-Former | MobileNet+Transformer轻量化模型(精度速度秒杀MobileNet)"/></a><div class="content"><a class="title" href="/2021/08/14/35/" title="Mobile-Former | MobileNet+Transformer轻量化模型(精度速度秒杀MobileNet)">Mobile-Former | MobileNet+Transformer轻量化模型(精度速度秒杀MobileNet)</a><time datetime="2021-08-14T10:05:33.000Z" title="发表于 2021-08-14 18:05:33">2021-08-14</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/achieve_img.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2021 By ChaucerG</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Welcome to my CHANNEL!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (true){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><script src="/js/search/local-search.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.2
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container:not\([display]\)').forEach(node => {
+            const target = node.parentNode
+            if (target.nodeName.toLowerCase() === 'li') {
+              target.parentNode.classList.add('has-jax')
+            } else {
+              target.classList.add('has-jax')
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/copy-tex.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/copy-tex.css"><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script><script>function addGitalkSource () {
+  const ele = document.createElement('link')
+  ele.rel = 'stylesheet'
+  ele.href= 'https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css'
+  document.getElementsByTagName('head')[0].appendChild(ele)
+}
+
+function loadGitalk () {
+  function initGitalk () {
+    var gitalk = new Gitalk(Object.assign({
+      clientID: 'c2f87403b1eb48242fd0',
+      clientSecret: '2710e87d30566c624d462848d26c6ecfaa287296',
+      repo: 'blog-comments',
+      owner: 'ChaucerG',
+      admin: ['ChaucerG'],
+      id: '697b30b2b77beaf60b38f31085760c1d',
+      language: 'zh-CN',
+      perPage: 10,
+      distractionFreeMode: false,
+      pagerDirection: 'last',
+      createIssueManually: false,
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  if (typeof Gitalk === 'function') initGitalk()
+  else {
+    addGitalkSource()
+    getScript('https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js').then(initGitalk)
+  }
+}
+
+function commentCount(n){
+  let isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+  if (isCommentCount) {
+    isCommentCount.innerHTML= n
+  }
+}
+
+if ('Gitalk' === 'Gitalk' || !true) {
+  if (true) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+  else loadGitalk()
+} else {
+  function loadOtherComment () {
+    loadGitalk()
+  }
+}</script></div><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

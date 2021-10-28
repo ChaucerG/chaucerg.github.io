@@ -1,0 +1,362 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>牛津大学提出PSViT | Token池化+Attention Sharing让Transformer模型不在冗余！！！ | 集智书童</title><meta name="keywords" content="Token池化,Attention Sharing"><meta name="author" content="ChaucerG"><meta name="copyright" content="ChaucerG"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="简介 在本文中，作者观察到在应用ViT进行图像识别时存在两级冗余。首先，固定整个网络的Token数量会在空间层面产生冗余特征；其次，不同Transformer之间的注意力图是冗余的。 基于上述观察，作者提出了一种PSViT:一种带有Token pooling和Atention共享的ViT以减少冗余的同时有效增强特征表示能力，实现更好的速度-精度权衡。 具体来说，在PSViT中，Token poo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="牛津大学提出PSViT | Token池化+Attention Sharing让Transformer模型不在冗余！！！">
+<meta property="og:url" content="https://chaucerg.github.io/2021/08/10/34/index.html">
+<meta property="og:site_name" content="集智书童">
+<meta property="og:description" content="简介 在本文中，作者观察到在应用ViT进行图像识别时存在两级冗余。首先，固定整个网络的Token数量会在空间层面产生冗余特征；其次，不同Transformer之间的注意力图是冗余的。 基于上述观察，作者提出了一种PSViT:一种带有Token pooling和Atention共享的ViT以减少冗余的同时有效增强特征表示能力，实现更好的速度-精度权衡。 具体来说，在PSViT中，Token poo">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://chaucerg.github.io/img/achieve_img.jpg">
+<meta property="article:published_time" content="2021-08-10T09:59:11.000Z">
+<meta property="article:modified_time" content="2021-10-28T10:04:20.226Z">
+<meta property="article:author" content="ChaucerG">
+<meta property="article:tag" content="Token池化">
+<meta property="article:tag" content="Attention Sharing">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://chaucerg.github.io/img/achieve_img.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://chaucerg.github.io/2021/08/10/34/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: true,
+    post: true
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: ChaucerG","link":"链接: ","source":"来源: 集智书童","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '牛津大学提出PSViT | Token池化+Attention Sharing让Transformer模型不在冗余！！！',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-10-28 18:04:20'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 5.4.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">37</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">61</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">24</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-map-signs"></i><span> 目录</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fas fa-coffee"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/achieve_img.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">集智书童</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-map-signs"></i><span> 目录</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fas fa-coffee"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">牛津大学提出PSViT | Token池化+Attention Sharing让Transformer模型不在冗余！！！</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-08-10T09:59:11.000Z" title="发表于 2021-08-10 17:59:11">2021-08-10</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-10-28T10:04:20.226Z" title="更新于 2021-10-28 18:04:20">2021-10-28</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/PSViT/">PSViT</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/PSViT/Transformer/">Transformer</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="牛津大学提出PSViT | Token池化+Attention Sharing让Transformer模型不在冗余！！！"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210810/1.png" alt=""></p>
+<h2 id="简介">简介</h2>
+<p>在本文中，作者观察到在应用ViT进行图像识别时存在两级冗余。首先，固定整个网络的Token数量会在空间层面产生冗余特征；其次，不同Transformer之间的注意力图是冗余的。</p>
+<p>基于上述观察，作者提出了一种PSViT:一种带有Token pooling和Atention共享的ViT以减少冗余的同时有效增强特征表示能力，实现更好的速度-精度权衡。</p>
+<p>具体来说，在PSViT中，Token pooling可以定义为在空间级别上减少token数量的操作。并在相邻的Transformer层之间建立Atention共享，以重用相邻层之间相关性较强的Attention Map。然后，为不同的Token pooling和Atention共享机制构建一个紧凑的可能性组合集。基于所提出的compact set可以将每一层的token数量和Atention共享层的选择视为从数据中自动学习的超参数。</p>
+<p>实验结果表明，与DeiT方法相比，该方法在ImageNet分类中准确率提高了6.6%</p>
+<h4 id="主要贡献">主要贡献</h4>
+<ol>
+<li>提出了一种基于Token pooling和Share Attention的PSViT方案，设计更好的视觉Transformer可以有效地增强特征表示；</li>
+<li>为Token pooling和Share Attention提出了一组紧凑的设计选择，并在此基础上利用现成的AutoML方法学习最佳设计选择；</li>
+<li>综合实验结果表明，与DeiT相比，该算法在ImageNet分类中的准确率提高了6.6%。</li>
+</ol>
+<h2 id="Token-Pooling-and-Sharing-for-Transformer">Token Pooling and Sharing for Transformer</h2>
+<p>![图3]<img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210810/2.png" alt=""></p>
+<h3 id="Token-Pooling">Token Pooling</h3>
+<p>Token Pooling机制调整每个阶段的token数量，如图3所示。当网络深度增加时，本文减少token数量以消除空间冗余，增加特征维数以容纳更多不同的高级特征。</p>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210810/3.png" alt=""></p>
+<p>Token Pooling有2种设计选项：</p>
+<ul>
+<li><strong>第1种方法</strong>：是将图像patch视为1D token，利用额外的CLS token进行分类任务。</li>
+<li><strong>第2种方法</strong>：是去除CLS token，将图像patch保持在一个2D数组中，这与ResNet中的池化策略相同。</li>
+</ul>
+<p>对于第1个策略，通过卷积和Max-Pooling来实现Token Pooling。与只减少token数量不同，本文目标是增强特性表示能力。这里首先利用一维卷积来改变特征维数(即每个token的维数)，然后通过一维最大池化来减少token的数量。</p>
+<p>作者将采用上述池化策略的网络命名为<strong>PSViT-1D</strong>。</p>
+<p>在第2种策略中，采用stride=2的二维卷积层进行Token Pooling，这在许多卷积网络中得到了广泛的应用。</p>
+<p>这里将具有第2种池策略的网络命名为<strong>PSViT-2D</strong>。</p>
+<p>简单地在每一层之后添加一个Token Pooling层会迅速降低模型的表示能力。受到简历深层网络原则的影响，例如VGGNet, ResNet和MobileNet，作者在几层之后添加了一个Pooling层，并用相同的token number作为一个阶段来命名这些层。</p>
+<h4 id="Token-维度研究">Token 维度研究</h4>
+<p>为了增加ViT的表示能力同时保持其计算开销的FLOPs，可以有两种选择来修改网络结构:</p>
+<ul>
+<li>增加标记尺寸而减少令牌号码或保持标记尺寸,</li>
+<li>增加变压器层数。</li>
+</ul>
+<p>基于这2种选择对表1中的1D策略进行了一些初步实验，结果表明<strong>增加特征维数同时减少token数量是更好的选择</strong>。</p>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210810/4.png" alt=""></p>
+<p>具体来说，在实验中，baseline模型固定特征尺寸，而表1中的Dimension1方案固定token维数，并在各个阶段减少token数量。为了平衡总计算量，增加了几个编码器层。表1中的Dimension2方案增加了token的维数，同时减少了token数量。</p>
+<p>这2种方案设计的体系结构遵循计算均匀分布在阶段的原则。从表1中可以看出，这2种token维设计的性能要比通过整个网络固定特征尺寸的DeiT-Tiny模型好得多。在增加特征维数(维数2)的同时减少token数的方法性能最好。</p>
+<h4 id="设计选择分析">设计选择分析</h4>
+<p>在CV任务中有2个特点。首先，正如第1节所讨论的，High-level特征在空间层面上具有冗余。因此，通过Token Pooling在空间层面上降低冗余是合理的。表1中的结果支持这一点，其中2个Token Pooling设计比没有Token Pooling的DeiT-Tiny模型性能要好得多。</p>
+<p>深层网络中的不同层对不同层次的信息进行编码。低层次的特征，例如边缘和纹理，在浅层可以很少，可以共享来代表高级特征。相反，高层次的特征，例如不同视角的属性或对象，在更深层次上更难以共享。因此，大多数CNN的设计，如VGGNet、ResNet和MobileNet遵循的规则是越深层特征维度越高。表1中的结果也验证了这一点，其中在维度2中增加更深层次的特征维比在维度1中固定特征维表现得更好。</p>
+<h3 id="Attention-Sharing">Attention Sharing</h3>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210810/5.png" alt=""></p>
+<p>如图所示，连续多注意层次中的attention map是相似的。其中一个原因是，在transformer中使用了标识映射，并使用残差。在这种情况下，主要特征虽然被残差改变了，但不会有很大的变化。因此，相邻层的特征会彼此相似，从而产生相似特征之间的attention map。这种相似性导致了冗余。因此，采用一些共享机制来减少冗余，同时减少计算量。</p>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210810/6.png" alt=""></p>
+<p>具体来说，通过图©所示的相邻层之间的注意力计算过程来实现注意力共享的目的。如果一层重用了前一层的注意力分数，那么就不计算注意力分数以及Q和K。前面一层计算出的attention作为这一层的输入attention计算的整个过程。self-attention被简化为V与输入注意力分数的点积。</p>
+<p>Attention Sharing可以帮助消除相邻transformer层之间attention map冗余。另一方面，一些相邻的图层可能具有非常不同的功能，共享它们的注意力图就不那么有效了。考虑到这一点，应该提供灵活性，使整个ViT仍然可以选择使用原来的多头注意力模块，而不sharing attention map。因此，在设计transformer整体架构时将Attention Sharing模块作为对原有独立多头注意力模块的可选方案。</p>
+<h2 id="AutoML-Enhanced-Transformer">AutoML Enhanced Transformer</h2>
+<h3 id="Search-Space-for-PSViT">Search Space for PSViT</h3>
+<p>如前所述，token pooling是指在空间层面上减少token数量，增加每个token的特征通道数量的操作，这种操作可能会极大地影响特征的表示能力。因此，在ViT中特别考虑它的不同形式。</p>
+<p>每个阶段的设计选择主要包括3个因素:</p>
+<ul>
+<li>token数量$N_t$，</li>
+<li>token维数$N_f$，</li>
+<li>每个阶段的层数$N_b$。</li>
+</ul>
+<p>为了得到这3个因素的最优选择构建了一个对它们有多个选择的搜索空间。搜索空间中的每个元素都将产生一个新的transformer候选网络体系结构。</p>
+<p>在每一层中，token数量有$S_t$种可能的选择，token维度有$S_f$种可能的选择，每个map使用attention map有$S_s$种可能的选择。对于L层，仅考虑token pooling的搜索空间将包含$(S_t·S_f·S_s)^L$候选设计。例如，当$S_t$= 4, $S_f$= 4, $S_s$= 4, L= 36时，大约有$1.1\times 10^{65}$个选项，约$9.6\times 10^{52}$倍的SPOS方法的大小。相比之下，SPOS每层有4个选择，而这个搜索空间每层有64个。这个搜索空间太大，每一层都有太多的选择。使用搜索算法从这个搜索空间中获得最好的架构花费了太多的时间。此外，每一层的选择过多可能会使现有的快速搜索算法失效。因此，需要缩小搜索空间。</p>
+<p>设计搜索空间的原因如下:</p>
+<ul>
+<li>根据3.2.1节的分析，随着深度的增加，token维数增加，token数减少。这有助于通过删除不符合此规则的网络架构来减少搜索空间；</li>
+<li>遵循成熟的CNN设计，限制一个阶段中的多个层具有相同数量的token和相同的token维度。为了减少搜索算法所需的搜索空间和计算量，只使用了token pooling的3个阶段；</li>
+<li>对于每个阶段的层数，只考虑有限的层数，进一步减少搜索空间和计算量；</li>
+<li>为不同的层次提供了应用注意力共享或不共享的灵活性。</li>
+</ul>
+<h4 id="网络设计搜索空间">网络设计搜索空间</h4>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210810/7.png" alt=""></p>
+<p>如果将每个阶段的层次数量和注意力图共享设置作为网络的超参数，那么学习它们的自然选择就是基于RL或EA的方法，这在搜索过程中非常缓慢。</p>
+<p>因此，作者采用基于权值共享的方法作为本文的搜索算法，这需要定义一个supernet来囊括搜索空间中的所有候选架构。一种可能的supernet设计如图所示。supernet有3个阶段。在阶段之间放置一个token pooling层，以更改token number和特性维度。</p>
+<p>每个阶段有6个单元，其中一个单元有3个路径选择，1个基本的transformer层，2个共享层(第1个transformer层的注意力映射被复制到第2层)和identity映射。</p>
+<p>候选体系结构可以为每个单元独立地从3个选择中选择一条路径。通过包含identity映射，候选网络可以有0到36(所有单元选择共享层)transformer层。这种supernet设计为transformer架构提供了更大的可行性。</p>
+<p>例如，候选对象只能为所有层选择基本层，这相当于2个token pooling层增强的transformer。作为另一个例子，一个候选架构可以在第一阶段为所有的前6个单元选择共享层路径，并为其余单元选择token，它有12个transformer层，每2层共享注意力图，但没有token pooling。</p>
+<h3 id="AutoML-for-the-Searching">AutoML for the Searching</h3>
+<h4 id="Training-the-supernet">Training the supernet</h4>
+<p>前面构建的supernet包含了所有候选网络。对于supernet的每个单元都有多种选择。通过激活每个细胞中的一个选择，就可以构建一个候选网络。在训练过程中，SPOS对每次训练迭代进行统一采样，只选择一个候选网络，并在supernet中更新所选候选网络的参数。候选网络将继承supernet的训练参数，并不断更新这些参数。一旦supernet被训练，所有的候选网络都可以继承它的权值，而不需要从头开始进行搜索训练。</p>
+<h4 id="Searching-from-the-trained-supernet">Searching from the trained supernet</h4>
+<p>对supernet进行训练后，将进化方法进一步应用于supernet中的所有候选网络，得到最佳的候选网络结构。</p>
+<h2 id="实验">实验</h2>
+<h3 id="Classification实验">Classification实验</h3>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210810/8.png" alt=""></p>
+<h3 id="Object-Detection-Instance-Segmentation">Object Detection &amp; Instance Segmentation</h3>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210810/9.png" alt=""></p>
+<h3 id="可视化">可视化</h3>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210810/10.png" alt=""></p>
+<h2 id="参考">参考</h2>
+<p>[1].PSViT: Better Vision Transformer via Token Pooling and Attention Sharing<br></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">ChaucerG</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://chaucerg.github.io/2021/08/10/34/">https://chaucerg.github.io/2021/08/10/34/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://chaucerg.github.io" target="_blank">集智书童</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Token%E6%B1%A0%E5%8C%96/">Token池化</a><a class="post-meta__tags" href="/tags/Attention-Sharing/">Attention Sharing</a></div><div class="post_share"><div class="social-share" data-image="/img/achieve_img.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button button--animated"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wechat.png" target="_blank"><img class="post-qr-code-img" src="/img/wechat.png" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="/img/alipay.png" target="_blank"><img class="post-qr-code-img" src="/img/alipay.png" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/08/05/33/"><img class="prev-cover" src="/img/achieve_img.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">YOffleNet | YOLO V4 基于嵌入式设备的轻量化改进设计</div></div></a></div><div class="next-post pull-right"><a href="/2021/08/14/35/"><img class="next-cover" src="/img/achieve_img.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Mobile-Former | MobileNet+Transformer轻量化模型(精度速度秒杀MobileNet)</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">ChaucerG</div><div class="author-info__description">干就完了！</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">37</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">61</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">24</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ChaucerG"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/ChaucerG" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:chaucer_g@126.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a><a class="social-icon" href="/img/weixin.jpg" target="_blank" title="Wechat"><i class="fab fa-weixin"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">更多内容可以关注【集智书童】公众号和【集智书童】知识星球，获取原创文章以及项目源码 ~</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-number">1.</span> <span class="toc-text">简介</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BB%E8%A6%81%E8%B4%A1%E7%8C%AE"><span class="toc-number">1.0.1.</span> <span class="toc-text">主要贡献</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Token-Pooling-and-Sharing-for-Transformer"><span class="toc-number">2.</span> <span class="toc-text">Token Pooling and Sharing for Transformer</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Token-Pooling"><span class="toc-number">2.1.</span> <span class="toc-text">Token Pooling</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Token-%E7%BB%B4%E5%BA%A6%E7%A0%94%E7%A9%B6"><span class="toc-number">2.1.1.</span> <span class="toc-text">Token 维度研究</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%BE%E8%AE%A1%E9%80%89%E6%8B%A9%E5%88%86%E6%9E%90"><span class="toc-number">2.1.2.</span> <span class="toc-text">设计选择分析</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Attention-Sharing"><span class="toc-number">2.2.</span> <span class="toc-text">Attention Sharing</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AutoML-Enhanced-Transformer"><span class="toc-number">3.</span> <span class="toc-text">AutoML Enhanced Transformer</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Search-Space-for-PSViT"><span class="toc-number">3.1.</span> <span class="toc-text">Search Space for PSViT</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E8%AE%BE%E8%AE%A1%E6%90%9C%E7%B4%A2%E7%A9%BA%E9%97%B4"><span class="toc-number">3.1.1.</span> <span class="toc-text">网络设计搜索空间</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AutoML-for-the-Searching"><span class="toc-number">3.2.</span> <span class="toc-text">AutoML for the Searching</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Training-the-supernet"><span class="toc-number">3.2.1.</span> <span class="toc-text">Training the supernet</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Searching-from-the-trained-supernet"><span class="toc-number">3.2.2.</span> <span class="toc-text">Searching from the trained supernet</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C"><span class="toc-number">4.</span> <span class="toc-text">实验</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Classification%E5%AE%9E%E9%AA%8C"><span class="toc-number">4.1.</span> <span class="toc-text">Classification实验</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Object-Detection-Instance-Segmentation"><span class="toc-number">4.2.</span> <span class="toc-text">Object Detection &amp; Instance Segmentation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%AF%E8%A7%86%E5%8C%96"><span class="toc-number">4.3.</span> <span class="toc-text">可视化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">5.</span> <span class="toc-text">参考</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2021/09/27/18/" title="如何用Transformer一步一步改进Unet?"><img src="/img/achieve_img.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="如何用Transformer一步一步改进Unet?"/></a><div class="content"><a class="title" href="/2021/09/27/18/" title="如何用Transformer一步一步改进Unet?">如何用Transformer一步一步改进Unet?</a><time datetime="2021-09-27T07:58:05.000Z" title="发表于 2021-09-27 15:58:05">2021-09-27</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/09/23/17/" title="85FPS！CNN+Transformer语义分割的又一境界，真的很快！"><img src="/img/achieve_img.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="85FPS！CNN+Transformer语义分割的又一境界，真的很快！"/></a><div class="content"><a class="title" href="/2021/09/23/17/" title="85FPS！CNN+Transformer语义分割的又一境界，真的很快！">85FPS！CNN+Transformer语义分割的又一境界，真的很快！</a><time datetime="2021-09-23T14:27:19.000Z" title="发表于 2021-09-23 22:27:19">2021-09-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/08/23/37/" title="详解分析 | ViT如何在医疗图像领域替代CNNs？"><img src="/img/achieve_img.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="详解分析 | ViT如何在医疗图像领域替代CNNs？"/></a><div class="content"><a class="title" href="/2021/08/23/37/" title="详解分析 | ViT如何在医疗图像领域替代CNNs？">详解分析 | ViT如何在医疗图像领域替代CNNs？</a><time datetime="2021-08-23T10:35:27.000Z" title="发表于 2021-08-23 18:35:27">2021-08-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/08/16/36/" title="详细解读 | 如何让你的DETR目标检测模型快速收敛"><img src="/img/achieve_img.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="详细解读 | 如何让你的DETR目标检测模型快速收敛"/></a><div class="content"><a class="title" href="/2021/08/16/36/" title="详细解读 | 如何让你的DETR目标检测模型快速收敛">详细解读 | 如何让你的DETR目标检测模型快速收敛</a><time datetime="2021-08-16T10:14:59.000Z" title="发表于 2021-08-16 18:14:59">2021-08-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/08/14/35/" title="Mobile-Former | MobileNet+Transformer轻量化模型(精度速度秒杀MobileNet)"><img src="/img/achieve_img.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Mobile-Former | MobileNet+Transformer轻量化模型(精度速度秒杀MobileNet)"/></a><div class="content"><a class="title" href="/2021/08/14/35/" title="Mobile-Former | MobileNet+Transformer轻量化模型(精度速度秒杀MobileNet)">Mobile-Former | MobileNet+Transformer轻量化模型(精度速度秒杀MobileNet)</a><time datetime="2021-08-14T10:05:33.000Z" title="发表于 2021-08-14 18:05:33">2021-08-14</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/achieve_img.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2021 By ChaucerG</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Welcome to my CHANNEL!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (true){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><script src="/js/search/local-search.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.2
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container:not\([display]\)').forEach(node => {
+            const target = node.parentNode
+            if (target.nodeName.toLowerCase() === 'li') {
+              target.parentNode.classList.add('has-jax')
+            } else {
+              target.classList.add('has-jax')
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/copy-tex.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/copy-tex.css"><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script><script>function addGitalkSource () {
+  const ele = document.createElement('link')
+  ele.rel = 'stylesheet'
+  ele.href= 'https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css'
+  document.getElementsByTagName('head')[0].appendChild(ele)
+}
+
+function loadGitalk () {
+  function initGitalk () {
+    var gitalk = new Gitalk(Object.assign({
+      clientID: 'c2f87403b1eb48242fd0',
+      clientSecret: '2710e87d30566c624d462848d26c6ecfaa287296',
+      repo: 'blog-comments',
+      owner: 'ChaucerG',
+      admin: ['ChaucerG'],
+      id: '4187b1f835c6224b4c064eb4d97a1947',
+      language: 'zh-CN',
+      perPage: 10,
+      distractionFreeMode: false,
+      pagerDirection: 'last',
+      createIssueManually: false,
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  if (typeof Gitalk === 'function') initGitalk()
+  else {
+    addGitalkSource()
+    getScript('https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js').then(initGitalk)
+  }
+}
+
+function commentCount(n){
+  let isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+  if (isCommentCount) {
+    isCommentCount.innerHTML= n
+  }
+}
+
+if ('Gitalk' === 'Gitalk' || !true) {
+  if (true) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+  else loadGitalk()
+} else {
+  function loadOtherComment () {
+    loadGitalk()
+  }
+}</script></div><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

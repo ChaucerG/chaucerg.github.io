@@ -1,0 +1,356 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>详细解读 | Google与Waymo教你如何更好的训练目标检测模型！！！ | 集智书童</title><meta name="keywords" content="训练目标检测模型,Waymo,Google"><meta name="author" content="ChaucerG"><meta name="copyright" content="ChaucerG"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="简介 通过更好的模型架构、训练和推理方法的结合，目标检测系统的速度-精度Pareto曲线得到了改进。在本文中系统地评估了各种各样的技术，以理解现代检测系统的大多数改进来自哪里。 本文用RetinaNet和RCNN检测器在普通的ResNet-FPN backbone上对这些改进进行benchamrk测试。普通检测器的准确率提高了7.7%，速度提高了30%。  作者进一步提供了简单的scale策略来">
+<meta property="og:type" content="article">
+<meta property="og:title" content="详细解读 | Google与Waymo教你如何更好的训练目标检测模型！！！">
+<meta property="og:url" content="https://chaucerg.github.io/2021/07/12/26/index.html">
+<meta property="og:site_name" content="集智书童">
+<meta property="og:description" content="简介 通过更好的模型架构、训练和推理方法的结合，目标检测系统的速度-精度Pareto曲线得到了改进。在本文中系统地评估了各种各样的技术，以理解现代检测系统的大多数改进来自哪里。 本文用RetinaNet和RCNN检测器在普通的ResNet-FPN backbone上对这些改进进行benchamrk测试。普通检测器的准确率提高了7.7%，速度提高了30%。  作者进一步提供了简单的scale策略来">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://chaucerg.github.io/img/achieve_img.jpg">
+<meta property="article:published_time" content="2021-07-12T08:26:57.000Z">
+<meta property="article:modified_time" content="2021-10-28T08:34:05.516Z">
+<meta property="article:author" content="ChaucerG">
+<meta property="article:tag" content="训练目标检测模型">
+<meta property="article:tag" content="Waymo">
+<meta property="article:tag" content="Google">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://chaucerg.github.io/img/achieve_img.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://chaucerg.github.io/2021/07/12/26/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: true,
+    post: true
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: ChaucerG","link":"链接: ","source":"来源: 集智书童","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '详细解读 | Google与Waymo教你如何更好的训练目标检测模型！！！',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-10-28 16:34:05'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 5.4.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">37</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">61</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">24</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-map-signs"></i><span> 目录</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fas fa-coffee"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/achieve_img.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">集智书童</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-map-signs"></i><span> 目录</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fas fa-coffee"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">详细解读 | Google与Waymo教你如何更好的训练目标检测模型！！！</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-07-12T08:26:57.000Z" title="发表于 2021-07-12 16:26:57">2021-07-12</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-10-28T08:34:05.516Z" title="更新于 2021-10-28 16:34:05">2021-10-28</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="详细解读 | Google与Waymo教你如何更好的训练目标检测模型！！！"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210712/1.png" alt=""></p>
+<h2 id="简介">简介</h2>
+<p>通过更好的模型架构、训练和推理方法的结合，目标检测系统的速度-精度Pareto曲线得到了改进。在本文中系统地评估了各种各样的技术，以理解现代检测系统的大多数改进来自哪里。</p>
+<p>本文用RetinaNet和RCNN检测器在普通的ResNet-FPN backbone上对这些改进进行benchamrk测试。普通检测器的准确率提高了7.7%，速度提高了30%。</p>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210712/2.png" alt=""></p>
+<p>作者进一步提供了简单的scale策略来生成形成两条Pareto曲线的模型族，分别命名为RetinaNet-RS和Cascade RCNN-RS。这些简单的rescale检测器探索了one-stage RetinaNet检测器和two-stage RCNN检测器之间的速度-精度权衡。</p>
+<p>最大的Cascade RCNN-RS模型使用ResNet152-FPN backbone实现了52.9%的AP，使用SpineNet143L backbone实现了53.6%。最后，展示了ResNet架构作为目标检测和实例分割系统的backbone，通过3个微小的架构变化后，其性能优于EfficientNet。</p>
+<blockquote>
+<p><strong>本文主要贡献</strong>：</p>
+<ul>
+<li>确定了关键的架构变化、训练方法和推理方法，显著提高了目标检测和实例分割系统的速度和准确性；</li>
+<li>强调了关键的实现细节，并为RetinaNet和Cascade RCNN模型建立了新的baseline；</li>
+<li>提供了2个目标检测模型家族作为未来研究的新baseline，<strong>RetineNetRS</strong>和<strong>Cascade RCNN-RS</strong>；</li>
+<li>探索了one-stage RetinaNet和two-stage RCNN模型之间的速度-精度权衡。</li>
+</ul>
+</blockquote>
+<h2 id="主要改进方法">主要改进方法</h2>
+<h3 id="修改ResNet架构">修改ResNet架构</h3>
+<p>这部分作者从3方面改进了标准的ResNet体系结构，以在较小的计算代价下提高其性能。Bello等人证明了SE Block和ResNet-D对于分类模型都是有效的。最近的检测方向也显示了像Sigmoid线性单元激活这样的非线性激活函数对提高检测性能也是有效的。</p>
+<h4 id="Squeeze-and-Excitation">Squeeze-and-Excitation</h4>
+<p>作者将SE模块应用于ResNet体系结构中的所有残差块中。接下来，在最后的1×1卷积层之后放置一个注意力模块，但在将残差部分与shortcut连接合并之前。所有实验都采用0.25的squeeze ratio。</p>
+<h4 id="ResNet-D-stem">ResNet-D stem</h4>
+<p>作者将原始的ResNet stem修改为ResNet-D stem。综上所述，作者将3个特征维数为64的7×7卷积层替换为特征维数分别为32、32、64的3×3卷积层。第1个3×3卷积的stride=2。同时在每个卷积层之后应用批处理归一化和激活层。</p>
+<h4 id="Sigmoid-Linear-Unit-activation">Sigmoid Linear Unit activation</h4>
+<p>$f(x) = x·\sigma (x)$计算的单元(SiLU)作为ReLU的替代可以得到良好的效果。在本研究中，作者将模型架构中的所有ReLU(backbone、FPN和检测头)替换为SiLU。</p>
+<h3 id="训练和推理方法">训练和推理方法</h3>
+<h4 id="训练方法"><strong>训练方法</strong></h4>
+<h4 id="Strong-data-augmentation">Strong data augmentation</h4>
+<p>作者应用了水平翻转和图像比例抖动，随机比例在[0.1，2.0]是主要的数据扩充策略。例如，如果输出图像的大小是640×640，首先将图像的大小调整为随机在64×64和1280×1280，然后填充或裁剪调整后的图像到640×640。</p>
+<h4 id="Strong-regularization">Strong regularization</h4>
+<p>应用4e-5权重衰减和初始dropout rate为0.2的随机深度进行模型正则化。根据network block在网络中的深度设置network block的dropout rate。一个block的最终dropout rate是通过将初始dropout rate乘以block的顺序除以总block数来计算的。</p>
+<h4 id="Longer-training-schedule">Longer training schedule</h4>
+<p>强数据增强和正则化方法与较长的训练计划相结合，以充分训练模型收敛。在不同的数据集上，不断增加训练的epoch，直到找到最佳schedule。</p>
+<h4 id="推理方法"><strong>推理方法</strong></h4>
+<p>对于推理，作者使用与训练相同的正方形图像大小。调整图像的较长边到目标尺寸，并填充0以保持宽高比。在batchsize为1的Tesla V100 GPU上测量推理速度，设置仅包括模型前向传递时间和前向传递加上后处理(例如，NMS)时间。作者报告了用float16精度和float32精度测量的延迟。进一步的推理时间加速可以通过TensorRT优化，这在本工作中没有使用。</p>
+<h3 id="Model-Scaling-Method">Model Scaling Method</h3>
+<p>作者提出了一种简单而有效的缩放方法，用于one-stage RetinaNet和two-stage RCNN检测器。EfficientDet中的复合缩放规则将输入分辨率与模型深度和所有模型组件(包括backbone、FPN和检测头)的特征维度一起进行缩放。</p>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210712/3.png" alt=""></p>
+<p>作者发现，在速度精度Pareto曲线的大多数阶段中，仅在输入分辨率和backbone深度上扩大模型是相当有效的，同时也非常简单。作者通过经验控制图像分辨率和backbone模型，然后进行如表1所示的网格搜索来确定Pareto曲线。</p>
+<p>对于RetinaNet，将输入分辨率从512提高到768，ResNet backbone深度从50到152。把RetinaNet作为一阶段目标检测，作者发现大的缩放输入分辨率会带来大分辨率的特征图，因此更多的锚点处理。这将导致更高密度的预测Head和复杂的NMS计算。RetinaNet的输入分辨率为768×768。缩放方法如表2所示。作者将重新缩放的RetinaNet模型命名为<strong>RetinaNet-RS</strong>。</p>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210712/4.png" alt=""></p>
+<p>对于RCNN模型，提高输入分辨率比单阶段检测器更有效。RCNN采用两阶段目标检测机制。</p>
+<p>第一阶段是区域建议阶段通常是轻量级和类无关的，因此输入解析不会在第一个阶段造成太多的开销。</p>
+<p>第二阶段总是处理从第一阶段产生的固定数量的预选框。作者设计了新的缩放方法，将输入分辨率从512扩展到1280，将ResNet backbone深度从50扩展到200。RCNN模型的缩放方法如表3所示，重新缩放的模型族称为<strong>RCNN-RS</strong>。</p>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210712/5.png" alt=""></p>
+<h2 id="检测框架">检测框架</h2>
+<h3 id="RetinaNet-RS">RetinaNet-RS</h3>
+<h4 id="检测Head">检测Head</h4>
+<p>遵循标准的RetinaNet head设计。简而言之，在最终的预测层之前使用4个3×3特征维数为256的卷积层和分类子网。每个卷积层之后是一个BN层和一个SiLU。</p>
+<p>卷积层在检测头的所有特征层中共享，而BN层不共享。作者设置anchor的长宽比为[1.0;2.0;0.5]，并将基准anchor大小设置为3.0。focal loss参数α和γ分别设置为0.25和1.5。</p>
+<h4 id="特征提取">特征提取</h4>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210712/6.png" alt=""></p>
+<h3 id="Cascade-RCNN-RS">Cascade RCNN-RS</h3>
+<h4 id="RPN-Head">RPN Head</h4>
+<p>对于Cascade RCNN-RS，作者通常Cascade RCNN的实现。对于RPN head，作者在特征维数256处使用2个3×3卷积层，同时设计与RetinaNet相同的锚定框设置。作者用500个proposals进行训练，用1000个proposals进行推理。</p>
+<h4 id="Box回归Head">Box回归Head</h4>
+<p>作者对box regression head使用2种设置，一种用于常规尺寸模型，另一种用于大尺寸模型。</p>
+<p>对于常规尺寸的模型，作者实现了2个级联head，增加IoU阈值0.6和0.7。在最终的预测层之前，每个head在特征维度256处有4个3×3卷积层，在特征维度1024处有一个全连接层。</p>
+<p>需要注意的是，为了获得良好的性能改进，必须使用与类无关的边界框回归。对于box regression head这里只预测了4个bounding box<br>
+coordinates，而不是4个(类的数量)。</p>
+<h4 id="Instance-segmentation-head">Instance segmentation head</h4>
+<p>在Instance segmentation head的最终预测层之前，作者在特征维度256处使用了4个3×3卷积层和1个3×3 stride=2反卷积层。</p>
+<h4 id="特征提取-2">特征提取</h4>
+<p>作者首先使用常规大小的Cascade RCNN框架研究了ResNet-50/101/152/200模型族和EfficientNet B1到B7模型族的性能。</p>
+<p>为了扩大基于ResNet的模型，作者使用表3中描述的缩放方法。扩大基于EfficientNet的模型。在ResNet和EfficientNet backbone上附加一个标准的FPN来提取P3到P7多尺度特征。</p>
+<p>为了获得最好的性能，作者采用了SpineNet-143/143L backbone。SpineNet-143L backbone将SpineNet-143中所有卷积层的特征维度均匀地扩大了1.5倍。</p>
+<h2 id="实验">实验</h2>
+<h3 id="速度与精度实验">速度与精度实验</h3>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210712/7.png" alt=""></p>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210712/8.png" alt=""></p>
+<h3 id="输入分辨率的影响">输入分辨率的影响</h3>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210712/9.png" alt=""></p>
+<h3 id="后处理速度对比">后处理速度对比</h3>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210712/10.png" alt=""></p>
+<h3 id="SOTA实验">SOTA实验</h3>
+<p><img src="https://gitee.com/chaucerg/pic_-web/raw/master/images_20210712/11.png" alt=""></p>
+<h2 id="参考">参考</h2>
+<p>[1].Simple Training Strategies and Model Scaling for Object Detection<br></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">ChaucerG</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://chaucerg.github.io/2021/07/12/26/">https://chaucerg.github.io/2021/07/12/26/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://chaucerg.github.io" target="_blank">集智书童</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E8%AE%AD%E7%BB%83%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E6%A8%A1%E5%9E%8B/">训练目标检测模型</a><a class="post-meta__tags" href="/tags/Waymo/">Waymo</a><a class="post-meta__tags" href="/tags/Google/">Google</a></div><div class="post_share"><div class="social-share" data-image="/img/achieve_img.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button button--animated"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wechat.png" target="_blank"><img class="post-qr-code-img" src="/img/wechat.png" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="/img/alipay.png" target="_blank"><img class="post-qr-code-img" src="/img/alipay.png" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/07/09/25/"><img class="prev-cover" src="/img/achieve_img.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">详细解读SSPNet | 小目标检测该如何进行改进？</div></div></a></div><div class="next-post pull-right"><a href="/2021/07/13/27/"><img class="next-cover" src="/img/achieve_img.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">2CSL-YOLO | 超越Tiny-YOLO V4，全新设计轻量化YOLO模型实现边缘实时检测！！！ - 2CSL-YOLO</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">ChaucerG</div><div class="author-info__description">干就完了！</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">37</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">61</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">24</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ChaucerG"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/ChaucerG" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:chaucer_g@126.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a><a class="social-icon" href="/img/weixin.jpg" target="_blank" title="Wechat"><i class="fab fa-weixin"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">更多内容可以关注【集智书童】公众号和【集智书童】知识星球，获取原创文章以及项目源码 ~</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-number">1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BB%E8%A6%81%E6%94%B9%E8%BF%9B%E6%96%B9%E6%B3%95"><span class="toc-number">2.</span> <span class="toc-text">主要改进方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9ResNet%E6%9E%B6%E6%9E%84"><span class="toc-number">2.1.</span> <span class="toc-text">修改ResNet架构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Squeeze-and-Excitation"><span class="toc-number">2.1.1.</span> <span class="toc-text">Squeeze-and-Excitation</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ResNet-D-stem"><span class="toc-number">2.1.2.</span> <span class="toc-text">ResNet-D stem</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Sigmoid-Linear-Unit-activation"><span class="toc-number">2.1.3.</span> <span class="toc-text">Sigmoid Linear Unit activation</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%AD%E7%BB%83%E5%92%8C%E6%8E%A8%E7%90%86%E6%96%B9%E6%B3%95"><span class="toc-number">2.2.</span> <span class="toc-text">训练和推理方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%AD%E7%BB%83%E6%96%B9%E6%B3%95"><span class="toc-number">2.2.1.</span> <span class="toc-text">训练方法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Strong-data-augmentation"><span class="toc-number">2.2.2.</span> <span class="toc-text">Strong data augmentation</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Strong-regularization"><span class="toc-number">2.2.3.</span> <span class="toc-text">Strong regularization</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Longer-training-schedule"><span class="toc-number">2.2.4.</span> <span class="toc-text">Longer training schedule</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A8%E7%90%86%E6%96%B9%E6%B3%95"><span class="toc-number">2.2.5.</span> <span class="toc-text">推理方法</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Model-Scaling-Method"><span class="toc-number">2.3.</span> <span class="toc-text">Model Scaling Method</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A3%80%E6%B5%8B%E6%A1%86%E6%9E%B6"><span class="toc-number">3.</span> <span class="toc-text">检测框架</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#RetinaNet-RS"><span class="toc-number">3.1.</span> <span class="toc-text">RetinaNet-RS</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A3%80%E6%B5%8BHead"><span class="toc-number">3.1.1.</span> <span class="toc-text">检测Head</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%89%B9%E5%BE%81%E6%8F%90%E5%8F%96"><span class="toc-number">3.1.2.</span> <span class="toc-text">特征提取</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Cascade-RCNN-RS"><span class="toc-number">3.2.</span> <span class="toc-text">Cascade RCNN-RS</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#RPN-Head"><span class="toc-number">3.2.1.</span> <span class="toc-text">RPN Head</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Box%E5%9B%9E%E5%BD%92Head"><span class="toc-number">3.2.2.</span> <span class="toc-text">Box回归Head</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Instance-segmentation-head"><span class="toc-number">3.2.3.</span> <span class="toc-text">Instance segmentation head</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%89%B9%E5%BE%81%E6%8F%90%E5%8F%96-2"><span class="toc-number">3.2.4.</span> <span class="toc-text">特征提取</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C"><span class="toc-number">4.</span> <span class="toc-text">实验</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%9F%E5%BA%A6%E4%B8%8E%E7%B2%BE%E5%BA%A6%E5%AE%9E%E9%AA%8C"><span class="toc-number">4.1.</span> <span class="toc-text">速度与精度实验</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%93%E5%85%A5%E5%88%86%E8%BE%A8%E7%8E%87%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="toc-number">4.2.</span> <span class="toc-text">输入分辨率的影响</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8E%E5%A4%84%E7%90%86%E9%80%9F%E5%BA%A6%E5%AF%B9%E6%AF%94"><span class="toc-number">4.3.</span> <span class="toc-text">后处理速度对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SOTA%E5%AE%9E%E9%AA%8C"><span class="toc-number">4.4.</span> <span class="toc-text">SOTA实验</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">5.</span> <span class="toc-text">参考</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2021/09/27/18/" title="如何用Transformer一步一步改进Unet?"><img src="/img/achieve_img.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="如何用Transformer一步一步改进Unet?"/></a><div class="content"><a class="title" href="/2021/09/27/18/" title="如何用Transformer一步一步改进Unet?">如何用Transformer一步一步改进Unet?</a><time datetime="2021-09-27T07:58:05.000Z" title="发表于 2021-09-27 15:58:05">2021-09-27</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/09/23/17/" title="85FPS！CNN+Transformer语义分割的又一境界，真的很快！"><img src="/img/achieve_img.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="85FPS！CNN+Transformer语义分割的又一境界，真的很快！"/></a><div class="content"><a class="title" href="/2021/09/23/17/" title="85FPS！CNN+Transformer语义分割的又一境界，真的很快！">85FPS！CNN+Transformer语义分割的又一境界，真的很快！</a><time datetime="2021-09-23T14:27:19.000Z" title="发表于 2021-09-23 22:27:19">2021-09-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/08/23/37/" title="详解分析 | ViT如何在医疗图像领域替代CNNs？"><img src="/img/achieve_img.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="详解分析 | ViT如何在医疗图像领域替代CNNs？"/></a><div class="content"><a class="title" href="/2021/08/23/37/" title="详解分析 | ViT如何在医疗图像领域替代CNNs？">详解分析 | ViT如何在医疗图像领域替代CNNs？</a><time datetime="2021-08-23T10:35:27.000Z" title="发表于 2021-08-23 18:35:27">2021-08-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/08/16/36/" title="详细解读 | 如何让你的DETR目标检测模型快速收敛"><img src="/img/achieve_img.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="详细解读 | 如何让你的DETR目标检测模型快速收敛"/></a><div class="content"><a class="title" href="/2021/08/16/36/" title="详细解读 | 如何让你的DETR目标检测模型快速收敛">详细解读 | 如何让你的DETR目标检测模型快速收敛</a><time datetime="2021-08-16T10:14:59.000Z" title="发表于 2021-08-16 18:14:59">2021-08-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/08/14/35/" title="Mobile-Former | MobileNet+Transformer轻量化模型(精度速度秒杀MobileNet)"><img src="/img/achieve_img.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Mobile-Former | MobileNet+Transformer轻量化模型(精度速度秒杀MobileNet)"/></a><div class="content"><a class="title" href="/2021/08/14/35/" title="Mobile-Former | MobileNet+Transformer轻量化模型(精度速度秒杀MobileNet)">Mobile-Former | MobileNet+Transformer轻量化模型(精度速度秒杀MobileNet)</a><time datetime="2021-08-14T10:05:33.000Z" title="发表于 2021-08-14 18:05:33">2021-08-14</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/achieve_img.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2021 By ChaucerG</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Welcome to my CHANNEL!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (true){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><script src="/js/search/local-search.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.2
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container:not\([display]\)').forEach(node => {
+            const target = node.parentNode
+            if (target.nodeName.toLowerCase() === 'li') {
+              target.parentNode.classList.add('has-jax')
+            } else {
+              target.classList.add('has-jax')
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/copy-tex.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/copy-tex.css"><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script><script>function addGitalkSource () {
+  const ele = document.createElement('link')
+  ele.rel = 'stylesheet'
+  ele.href= 'https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css'
+  document.getElementsByTagName('head')[0].appendChild(ele)
+}
+
+function loadGitalk () {
+  function initGitalk () {
+    var gitalk = new Gitalk(Object.assign({
+      clientID: 'c2f87403b1eb48242fd0',
+      clientSecret: '2710e87d30566c624d462848d26c6ecfaa287296',
+      repo: 'blog-comments',
+      owner: 'ChaucerG',
+      admin: ['ChaucerG'],
+      id: '8a762a99e4f9e60faadaa4b56c9160f7',
+      language: 'zh-CN',
+      perPage: 10,
+      distractionFreeMode: false,
+      pagerDirection: 'last',
+      createIssueManually: false,
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  if (typeof Gitalk === 'function') initGitalk()
+  else {
+    addGitalkSource()
+    getScript('https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js').then(initGitalk)
+  }
+}
+
+function commentCount(n){
+  let isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+  if (isCommentCount) {
+    isCommentCount.innerHTML= n
+  }
+}
+
+if ('Gitalk' === 'Gitalk' || !true) {
+  if (true) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+  else loadGitalk()
+} else {
+  function loadOtherComment () {
+    loadGitalk()
+  }
+}</script></div><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
